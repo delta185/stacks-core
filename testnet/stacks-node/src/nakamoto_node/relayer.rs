@@ -807,7 +807,7 @@ impl RelayerThread {
         debug!("relayer thread ID is {:?}", std::thread::current().id());
 
         self.next_initiative =
-            Instant::now() + Duration::from_secs(self.config.node.next_initiative_delay);
+            Instant::now() + Duration::from_millis(self.config.node.next_initiative_delay);
         while self.globals.keep_running() {
             let directive = if Instant::now() >= self.next_initiative {
                 self.next_initiative =
