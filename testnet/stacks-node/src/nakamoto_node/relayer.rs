@@ -185,8 +185,10 @@ impl RelayerThread {
 
         let bitcoin_controller = BitcoinRegtestController::new_dummy(config.clone());
 
+        let next_initiative_delay = config.node.next_initiative_delay;
+
         RelayerThread {
-            config: config,
+            config,
             sortdb,
             chainstate,
             mempool,
@@ -210,7 +212,7 @@ impl RelayerThread {
 
             miner_thread: None,
             is_miner,
-            next_initiative: Instant::now() + Duration::from_secs(4),
+            next_initiative: Instant::now() + Duration::from_millis(next_initiative_delay),
             last_committed: None,
         }
     }
@@ -804,10 +806,12 @@ impl RelayerThread {
     pub fn main(mut self, relay_rcv: Receiver<RelayerDirective>) {
         debug!("relayer thread ID is {:?}", std::thread::current().id());
 
-        self.next_initiative = Instant::now() + Duration::from_secs(4);
+        self.next_initiative =
+            Instant::now() + Duration::from_millis(self.config.node.next_initiative_delay);
         while self.globals.keep_running() {
             let directive = if Instant::now() >= self.next_initiative {
-                self.next_initiative = Instant::now() + Duration::from_secs(4);
+                self.next_initiative =
+                    Instant::now() + Duration::from_millis(self.config.node.next_initiative_delay);
                 self.initiative()
             } else {
                 None
